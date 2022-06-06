@@ -7,19 +7,18 @@ import StopButton from "../molecules/stop-button";
 const Recording = () => {
   const [file, setFile] = useState([]);
   const [audioState, setAudioState] = useState(true);
-  const { socket } = useSockets();
+  const { socket, messages, setMessages, tmpText, setTmpText } = useSockets();
   const audioRef = useRef();
   const [isRecording, setRecordingStatus] = useState(false);
   const [globalStream, setGlobalStream] = useState(null);
   const [input, setInput] = useState(null);
   const [processor, setProcessor] = useState(null);
 
-  useEffect(() => {
-    console.log("hi");
-  }, []);
+  useEffect(() => {}, []);
 
   const initRecording = async () => {
     console.log("create instance of recording");
+    socket.emit("startGoogleCloudStream", ""); //init socket Google Speech Connection
     setRecordingStatus(true);
     // レコーディングのインスタンスを作成
     audioRef.current = new AudioContext({ latencyHint: "interactive" });
@@ -32,6 +31,7 @@ const Recording = () => {
     setGlobalStream(tmpGlobalStream);
     const tmpProcessor = new window.AudioWorkletNode(audioRef.current, "recorder.worklet");
     tmpProcessor.connect(audioRef.current.destination);
+    console.log(tmpProcessor);
     audioRef.current.resume();
     tmpInput.connect(tmpProcessor);
     setInput(tmpInput);
@@ -40,12 +40,9 @@ const Recording = () => {
       microphoneProcess(audioData);
     };
     setProcessor(tmpProcessor);
-
-    function microphoneProcess(buffer) {
+    const microphoneProcess = (buffer) => {
       socket.emit("binaryData", buffer);
-    }
-    console.log(isRecording);
-    console.log("hello");
+    };
   };
 
   const handleStart = () => {
@@ -58,9 +55,9 @@ const Recording = () => {
 
   // 録音停止
   const handleStop = () => {
-    setRecordingStatus(false);
-
     socket.emit("endGoogleCloudStream", "");
+    setMessages([tmpText, ...messages]);
+    setTmpText(`▼ `);
     let track = globalStream.getTracks()[0];
     track.stop();
 
@@ -89,16 +86,23 @@ const Recording = () => {
     alert("エラーです。");
   };
 
+  socket.on("speechData", (data) => {
+    var dataFinal = undefined || data.results[0].isFinal;
+
+    if (dataFinal === false) {
+      setTmpText(`▼ ${data.results[0].alternatives[0].transcript}`);
+    }
+  });
+
+  socket.on("refreshSpeech", () => {
+    setMessages([tmpText, ...messages]);
+    setTmpText(`▼ `);
+  });
+
   return (
     <div>
       <StartButton handleClick={handleStart} isRecording={isRecording} />
       <StopButton handleClick={handleStop} isRecording={isRecording} />
-
-      <button onClick={handleStart}>録音</button>
-      <button onClick={handleStop} disabled={audioState}>
-        ストップ
-      </button>
-      <button onClick={handleRemove}>削除</button>
     </div>
   );
 };

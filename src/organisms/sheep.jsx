@@ -3,13 +3,11 @@ import { io } from "socket.io-client";
 
 import Recording from "../molecules/recording";
 import { useSockets } from "../context/socket.context";
+import MessageField from "../molecules/message-field";
 
 const TextField = () => {
   const { socket } = useSockets();
   const messageRef = useRef(null);
-  const [messages, setMessages] = useState([]);
-
-  console.log(messages);
 
   const handleClick = () => {
     const message = messageRef.current.value;
@@ -24,8 +22,8 @@ const TextField = () => {
 
   return (
     <div>
-      <input type="text" ref={messageRef} placeholder="write message" />
       <Recording />
+      <MessageField />
     </div>
   );
 };

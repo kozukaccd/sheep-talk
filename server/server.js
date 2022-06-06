@@ -1,6 +1,13 @@
 const PORT = 5098;
 const app = require("express")();
 const http = require("http").createServer(app);
+const dotenv = require("dotenv");
+dotenv.config();
+
+// Google Cloud
+const speech = require("@google-cloud/speech");
+const { Socket } = require("socket.io-client");
+const speechClient = new speech.SpeechClient();
 
 const io = require("socket.io")(http, {
   cors: {
@@ -37,10 +44,10 @@ io.on("connection", (client) => {
   });
 
   client.on("binaryData", function (data) {
-    console.log(data); //log binary data
-    // if (recognizeStream !== null) {
-    //   recognizeStream.write(data);
-    // }
+    // console.log(data); //log binary data
+    if (recognizeStream !== null) {
+      recognizeStream.write(data);
+    }
   });
 
   function startRecognitionStream(client) {
@@ -56,9 +63,10 @@ io.on("connection", (client) => {
         // if end of utterance, let's restart stream
         // this is a small hack. After 65 seconds of silence, the stream will still throw an error for speech length limit
         if (data.results[0] && data.results[0].isFinal) {
+          console.log("restarted stream serverside");
           stopRecognitionStream();
           startRecognitionStream(client);
-          // console.log('restarted stream serverside');
+          client.emit("refreshSpeech");
         }
       });
   }
@@ -70,3 +78,29 @@ io.on("connection", (client) => {
     recognizeStream = null;
   }
 });
+
+// =========================== GOOGLE CLOUD SETTINGS ================================ //
+
+// The encoding of the audio file, e.g. 'LINEAR16'
+// The sample rate of the audio file in hertz, e.g. 16000
+// The BCP-47 language code to use, e.g. 'en-US'
+const encoding = "LINEAR16";
+const sampleRateHertz = 16000;
+const languageCode = "ja-JP"; //en-US
+
+const request = {
+  config: {
+    encoding: encoding,
+    sampleRateHertz: sampleRateHertz,
+    languageCode: languageCode,
+    profanityFilter: false,
+    enableWordTimeOffsets: true,
+    speechContexts: [
+      {
+        phrases: ["千葉 いちば", "ケモナー", "ペドフィリア", "JMoF", "同人誌", "サルノリ"],
+      },
+    ], // add your own speech context for better recognition
+  },
+  interimResults: true, // If you want interim results, set this to true
+  // singleUtterance: true,
+};
