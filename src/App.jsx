@@ -1,13 +1,20 @@
 import { useState } from "react";
-import Field from "./organisms/sheep";
+import Sheep from "./organisms/sheep";
+import SheepController from "./organisms/sheep-controller";
+import { Routes, Route, BrowserRouter } from "react-router-dom";
+
 function App() {
   return (
     <div className="App">
-      <header>
-        <p>hello world</p>
-      </header>
+      <header></header>
+
       <main>
-        <Field />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Sheep />}></Route>
+            <Route path="/controller" element={<SheepController />}></Route>
+          </Routes>
+        </BrowserRouter>
       </main>
     </div>
   );

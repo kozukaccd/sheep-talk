@@ -9,6 +9,8 @@ const speech = require("@google-cloud/speech");
 const { Socket } = require("socket.io-client");
 const speechClient = new speech.SpeechClient();
 
+let activeStopStatus = false;
+
 const io = require("socket.io")(http, {
   cors: {
     methods: ["GET", "POST"],
@@ -47,36 +49,62 @@ io.on("connection", (client) => {
     // console.log(data); //log binary data
     if (recognizeStream !== null) {
       recognizeStream.write(data);
+    } else {
+      // console.log("mic data is receiving but ignored");
+    }
+  });
+  client.on("activeStopStream", function () {
+    activeStopStatus = true;
+  });
+  client.on("activeStartStream", function () {
+    activeStopStatus = false;
+  });
+  client.on("pauseStream", function () {
+    if (recognizeStream !== null) {
+      console.log("pausing stream");
+      stopRecognitionStream();
+    }
+  });
+  client.on("resumeStream", function (data) {
+    if (recognizeStream === null) {
+      console.log("restarting stream");
+      startRecognitionStream(this, data);
     }
   });
 
-  function startRecognitionStream(client) {
+  const startRecognitionStream = (client) => {
     recognizeStream = speechClient
       .streamingRecognize(request)
       .on("error", console.error)
       .on("data", (data) => {
         process.stdout.write(
-          data.results[0] && data.results[0].alternatives[0] ? `Transcription: ${data.results[0].alternatives[0].transcript}\n` : "\n\nReached transcription time limit, press Ctrl+C\n"
+          data.results[0] && data.results[0].alternatives[0]
+            ? `[${data.results[0] && data.results[0].isFinal}]: ${data.results[0].alternatives[0].transcript}\n`
+            : "\n\nReached transcription time limit, press Ctrl+C\n"
         );
         client.emit("speechData", data);
-
+        client.broadcast.emit("speechData", data);
         // if end of utterance, let's restart stream
         // this is a small hack. After 65 seconds of silence, the stream will still throw an error for speech length limit
-        if (data.results[0] && data.results[0].isFinal) {
-          console.log("restarted stream serverside");
-          stopRecognitionStream();
-          startRecognitionStream(client);
-          client.emit("refreshSpeech");
-        }
-      });
-  }
+        // console.log(activeStopStatus);
 
-  function stopRecognitionStream() {
+        // if (data.results[0] && data.results[0].isFinal) {
+        //   stopRecognitionStream();
+        //   if (!activeStopStatus) {
+        //     console.log("restarted stream serverside");
+        //     startRecognitionStream(client);
+        //     client.emit("refreshSpeech");
+        //   }
+        // }
+      });
+  };
+
+  const stopRecognitionStream = () => {
     if (recognizeStream) {
       recognizeStream.end();
     }
     recognizeStream = null;
-  }
+  };
 });
 
 // =========================== GOOGLE CLOUD SETTINGS ================================ //

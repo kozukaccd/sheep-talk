@@ -5,8 +5,9 @@ import Recording from "../molecules/recording";
 import { useSockets } from "../context/socket.context";
 import MessageField from "../molecules/message-field";
 
-const TextField = () => {
-  const { socket } = useSockets();
+const Sheep = () => {
+  const { socket, messages, setMessages, tmpText, setTmpText } = useSockets();
+
   const messageRef = useRef(null);
 
   const handleClick = () => {
@@ -16,16 +17,21 @@ const TextField = () => {
     messageRef.current.value = "";
   };
 
-  socket.on("responseMessage", (message) => {
-    setMessages([...messages, message]);
+  socket.on("speechData", (data) => {
+    var dataFinal = undefined || data.results[0].isFinal;
+    if (dataFinal === false) {
+      setTmpText(`▼ ${data.results[0].alternatives[0].transcript}`);
+    } else {
+      setTmpText(`▼ `);
+      setMessages([tmpText, ...messages]);
+    }
   });
 
   return (
     <div>
-      <Recording />
       <MessageField />
     </div>
   );
 };
 
-export default TextField;
+export default Sheep;
