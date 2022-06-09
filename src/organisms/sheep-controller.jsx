@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import { io } from "socket.io-client";
-
+import { Link } from "react-router-dom";
 import Recording from "../molecules/recording";
-import { useSockets } from "../context/socket.context";
-import MessageField from "../molecules/message-field";
+import FontSelector from "../molecules/font-selector";
 
 const SheepController = () => {
   return (
     <div>
+      <Link to="/player">Playerを開く</Link>
       <Recording />
+      <FontSelector />
     </div>
   );
 };

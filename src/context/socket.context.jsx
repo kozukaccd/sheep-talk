@@ -14,7 +14,7 @@ const SocketContext = createContext({
 
 const SocketsProvier = (props) => {
   const [messages, setMessages] = useState([]);
-  const [tmpText, setTmpText] = useState(`▼ `);
+  const [tmpText, setTmpText] = useState(``);
 
   return <SocketContext.Provider value={{ socket, messages, setMessages, tmpText, setTmpText }} {...props} />;
 };

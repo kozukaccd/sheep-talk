@@ -6,8 +6,8 @@ import SocketsProvider from "./context/socket.context";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <SocketsProvider>
-    <React.StrictMode>
-      <App />
-    </React.StrictMode>
+    {/* <React.StrictMode> */}
+    <App />
+    {/* </React.StrictMode> */}
   </SocketsProvider>
 );

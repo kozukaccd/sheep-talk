@@ -121,7 +121,7 @@ const Recording = () => {
     socket.emit("activeStopStream");
     socket.emit("endGoogleCloudStream", "");
     setMessages([tmpText, ...messages]);
-    setTmpText(`▼ `);
+    setTmpText(``);
     audioDisconnect();
     setRecordingStatus(false);
   };
@@ -149,7 +149,7 @@ const Recording = () => {
 
   socket.on("refreshSpeech", () => {
     setMessages([tmpText, ...messages]);
-    setTmpText(`▼ `);
+    setTmpText(``);
   });
 
   return (

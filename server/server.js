@@ -1,15 +1,18 @@
-const PORT = 5098;
-const app = require("express")();
-const http = require("http").createServer(app);
 const dotenv = require("dotenv");
 dotenv.config();
 
+const PORT = 5098;
+const app = require("express")();
+const http = require("http").createServer(app);
+
+const path = require("path");
+const fs = require("fs");
+
 // Google Cloud
 const speech = require("@google-cloud/speech");
-const { Socket } = require("socket.io-client");
 const speechClient = new speech.SpeechClient();
 
-let activeStopStatus = false;
+let isAnimationPlaying = false;
 
 const io = require("socket.io")(http, {
   cors: {
@@ -24,9 +27,6 @@ http.listen(PORT, () => {
 
 io.on("connection", (client) => {
   console.log("new client connected. socket.id=" + client.id);
-  console.log(`User connected ${client.id}`);
-
-  console.log("Client Connected to server");
   let recognizeStream = null;
 
   client.on("join", function () {
@@ -72,6 +72,28 @@ io.on("connection", (client) => {
     }
   });
 
+  client.on("getFontList", () => {
+    try {
+      const fontsList = fs
+        .readdirSync("../public/fonts", { withFileTypes: true }) //同期でファイル読み込み
+        .filter((dirent) => dirent.isFile())
+        .map(({ name }) => name) //フォルダ除外
+        .filter(function (file) {
+          return path.extname(file).toLowerCase() === ".otf" || path.extname(file).toLowerCase() === ".ttf"; //拡張子jpgだけ
+        });
+      client.emit("getFontlist", fontsList);
+    } catch (e) {
+      console.log(e);
+    }
+  });
+
+  client.on("select-font", (selectedFont) => {
+    console.log(selectedFont);
+    client.emit("select-font", selectedFont);
+    client.broadcast.emit("select-font", selectedFont);
+    // client.emit("select-font");
+  });
+
   const startRecognitionStream = (client) => {
     recognizeStream = speechClient
       .streamingRecognize(request)
@@ -88,14 +110,21 @@ io.on("connection", (client) => {
         // this is a small hack. After 65 seconds of silence, the stream will still throw an error for speech length limit
         // console.log(activeStopStatus);
 
-        // if (data.results[0] && data.results[0].isFinal) {
-        //   stopRecognitionStream();
-        //   if (!activeStopStatus) {
-        //     console.log("restarted stream serverside");
-        //     startRecognitionStream(client);
-        //     client.emit("refreshSpeech");
-        //   }
-        // }
+        if (data.results[0] && data.results[0].isFinal) {
+          if (isAnimationPlaying) {
+            // console.log("pause playing");
+            client.emit("toggleAnimation", "pause");
+            client.broadcast.emit("toggleAnimation", "pause");
+            isAnimationPlaying = false;
+          }
+        } else {
+          if (!isAnimationPlaying) {
+            // console.log("start playing");
+            client.emit("toggleAnimation", "play");
+            client.broadcast.emit("toggleAnimation", "play");
+            isAnimationPlaying = true;
+          }
+        }
       });
   };
 
