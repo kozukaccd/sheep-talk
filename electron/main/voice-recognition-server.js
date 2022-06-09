@@ -8,7 +8,7 @@ const http = require("http").createServer(app);
 const path = require("path");
 const fs = require("fs");
 
-module.exports = voiceRecognitionServer = () => {
+const voiceRecognitionServer = () => {
   // Google Cloud
   const speech = require("@google-cloud/speech");
   const speechClient = new speech.SpeechClient();
@@ -158,3 +158,5 @@ module.exports = voiceRecognitionServer = () => {
     // singleUtterance: true,
   };
 };
+
+export default voiceRecognitionServer;

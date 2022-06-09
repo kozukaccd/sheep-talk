@@ -1,3 +1,5 @@
+import voiceRecognitionServer from "./voice-recognition-server.js";
+
 const electron = require("electron");
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
@@ -5,7 +7,6 @@ const shell = electron.shell;
 
 const release = require("os").release;
 const join = require("path").join;
-const voiceRecognitionServer = require("./voice-recognition-server");
 
 // Disable GPU Acceleration for Windows 7
 if (release().startsWith("6.1")) app.disableHardwareAcceleration();
