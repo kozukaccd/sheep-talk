@@ -24,6 +24,8 @@ dist-ssr
 *.sw?
 
 *.json
+!package.json
 .env
 *.otf
 *.ttf
+out/

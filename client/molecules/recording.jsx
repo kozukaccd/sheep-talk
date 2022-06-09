@@ -70,7 +70,7 @@ const Recording = () => {
   };
 
   const initRecording = async () => {
-    socket.emit("activeStartStream");
+    // socket.emit("activeStartStream");
     socket.emit("startGoogleCloudStream", ""); //init socket Google Speech Connection
     setRecordingStatus(true);
     // レコーディングのインスタンスを作成
@@ -118,7 +118,7 @@ const Recording = () => {
 
   // 録音停止
   const handleStop = () => {
-    socket.emit("activeStopStream");
+    // socket.emit("activeStopStream");
     socket.emit("endGoogleCloudStream", "");
     setMessages([tmpText, ...messages]);
     setTmpText(``);

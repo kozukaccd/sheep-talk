@@ -32,7 +32,7 @@ const Test = () => {
       //   origin: "50% 100%",
       //   isForce3d: true,
 
-      scale: { 0: 1, duration: 1550, easing: "elastic.out", easing: "elastic.out" },
+      scale: { 0: 1, duration: 1550, easing: "elastic.out" },
       rotateZ: {
         [-90]: 0,
         duration: 1550,
