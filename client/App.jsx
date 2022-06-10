@@ -1,7 +1,7 @@
 import Sheep from "./organisms/sheep";
 import SheepController from "./organisms/sheep-controller";
 import Test from "./organisms/test";
-import { Routes, Route, BrowserRouter } from "react-router-dom";
+import { Routes, Route, HashRouter } from "react-router-dom";
 
 import react, { useState, useEffect } from "react";
 import { useSockets } from "./context/socket.context";
@@ -21,6 +21,11 @@ function App() {
   const { socket } = useSockets();
   const [selectedFont, setSelectedFont] = useState("");
 
+  console.log("===================");
+  console.log(Sheep);
+  console.log(SheepController);
+  console;
+  console.log("===================");
   useEffect(() => {
     socket.on("select-font", (data) => {
       console.log("koko is ugoiteru");
@@ -31,18 +36,24 @@ function App() {
   return (
     <div className="App">
       <GlobalStyle selectedFont={selectedFont} />
-      <header></header>
+      <header>
+        <p>aiueo</p>
+      </header>
       <main>
-        <BrowserRouter>
+        <HashRouter basename="/">
           <Routes>
-            <Route path="/player" element={<Sheep />}></Route>
-            <Route path="/" element={<SheepController />}></Route>
-            <Route path="/test" element={<Test />}></Route>
+            <Route path="/player" element={<Sheep />} />
+            <Route path="/" exact element={<SheepController />} />
+            <Route path="/test" element={<Test />} />
           </Routes>
-        </BrowserRouter>
+        </HashRouter>
       </main>
     </div>
   );
 }
+
+const TestComponent = () => {
+  return <p>testaaaa</p>;
+};
 
 export default App;

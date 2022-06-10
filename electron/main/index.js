@@ -1,4 +1,5 @@
 import voiceRecognitionServer from "./voice-recognition-server.js";
+import startWebServer from "./page-server.js";
 
 const electron = require("electron");
 const app = electron.app;
@@ -7,6 +8,15 @@ const shell = electron.shell;
 
 const release = require("os").release;
 const join = require("path").join;
+
+const mode = process.env["MODE"];
+let basePath = ".";
+if (mode) {
+  basePath = mode === "development" ? "." : "./resources/app";
+}
+
+console.log("hello from index.js");
+console.log(`current mode is ${mode}`);
 
 // Disable GPU Acceleration for Windows 7
 if (release().startsWith("6.1")) app.disableHardwareAcceleration();
@@ -22,7 +32,7 @@ process.env["ELECTRON_DISABLE_SECURITY_WARNINGS"] = "true";
 
 let win = null;
 // Here you can add more preload scripts
-const splash = join(__dirname, "../preload/splash.js");
+// const splash = join(__dirname, "../preload/splash.js");
 // 🚧 Use ['ENV_NAME'] to avoid vite:define plugin
 const url = `http://${process.env["VITE_DEV_SERVER_HOST"]}:${process.env["VITE_DEV_SERVER_PORT"]}`;
 
@@ -30,14 +40,13 @@ async function createWindow() {
   win = new BrowserWindow({
     title: "Main window",
     webPreferences: {
-      preload: splash,
       nodeIntegration: true,
       contextIsolation: false,
     },
   });
 
   if (app.isPackaged) {
-    win.loadFile(join(__dirname, "../../dist/index.html"));
+    win.loadFile(`${basePath}/dist/index.html`);
   } else {
     win.loadURL(url);
     // win.webContents.openDevTools()
@@ -56,6 +65,7 @@ async function createWindow() {
 }
 
 voiceRecognitionServer();
+startWebServer();
 
 app.whenReady().then(createWindow);
 

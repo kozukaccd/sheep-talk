@@ -27,45 +27,50 @@ import pkg from "./package.json";
 rmSync(join(__dirname, "dist"), { recursive: true, force: true }); // v14.14.0
 
 // https://vitejs.dev/config/
-export default defineConfig({
-  resolve: {
-    alias: {
-      "@": join(__dirname, "src"),
-      styles: join(__dirname, "src/assets/styles"),
+export default defineConfig((command, mode) => {
+  return {
+    resolve: {
+      alias: {
+        "@": join(__dirname, "src"),
+        styles: join(__dirname, "src/assets/styles"),
+      },
     },
-  },
-  plugins: [
-    react(),
-    electron({
-      main: {
-        entry: join(__dirname, "electron/main/index.js"),
-        vite: {
-          build: {
-            sourcemap: true,
-            outDir: join(__dirname, "dist/electron/main"),
-            string: true,
+    base: "./",
+    plugins: [
+      react({
+        include: "**/*.jsx",
+      }),
+      electron({
+        main: {
+          entry: join(__dirname, "electron/main/index.js"),
+          vite: {
+            build: {
+              sourcemap: true,
+              outDir: join(__dirname, "dist/electron/main"),
+              string: true,
+            },
           },
         },
-      },
-      // preload: {
-      //   input: {
-      //     // You can configure multiple preload scripts here
-      //     splash: join(__dirname, "electron/preload/splash.js"),
-      //   },
-      //   vite: {
-      //     build: {
-      //       // For debug
-      //       sourcemap: "inline",
-      //       outDir: join(__dirname, "dist/electron/preload"),
-      //     },
-      //   },
-      // },
-    }),
-    // Enables use of Node.js API in the Renderer-process
-    renderer(),
-  ],
-  server: {
-    host: pkg.env.VITE_DEV_SERVER_HOST,
-    port: pkg.env.VITE_DEV_SERVER_PORT,
-  },
+        // preload: {
+        //   input: {
+        //     // You can configure multiple preload scripts here
+        //     splash: join(__dirname, "electron/preload/splash.js"),
+        //   },
+        //   vite: {
+        //     build: {
+        //       // For debug
+        //       sourcemap: "inline",
+        //       outDir: join(__dirname, "dist/electron/preload"),
+        //     },
+        //   },
+        // },
+      }),
+      // Enables use of Node.js API in the Renderer-process
+      renderer(),
+    ],
+    server: {
+      host: pkg.env.VITE_DEV_SERVER_HOST,
+      port: pkg.env.VITE_DEV_SERVER_PORT,
+    },
+  };
 });

@@ -4,9 +4,9 @@
   "author": "iChiba",
   "description": "speech recognition for streamers.",
   "scripts": {
-    "dev": "vite",
+    "dev": "set MODE=development&&vite",
     "build": "vite build",
-    "electron:build": "electron-builder",
+    "electron-forge:build": "set MODE=production && vite build && electron-forge import && electron-forge make",
     "preview": "vite preview",
     "start": "electron-forge start",
     "package": "electron-forge package",

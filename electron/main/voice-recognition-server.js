@@ -1,5 +1,6 @@
 const dotenv = require("dotenv");
 dotenv.config();
+console.log(process.env);
 
 const PORT = 5098;
 const app = require("express")();
@@ -7,6 +8,9 @@ const http = require("http").createServer(app);
 
 const path = require("path");
 const fs = require("fs");
+
+const mode = process.env["MODE"];
+const basePath = mode === "development" ? "./public" : "./resources/app/dist";
 
 const voiceRecognitionServer = () => {
   // Google Cloud
@@ -71,7 +75,8 @@ const voiceRecognitionServer = () => {
     client.on("getFontList", () => {
       try {
         const fontsList = fs
-          .readdirSync(path.join(__dirname, "./public/fonts"), { withFileTypes: true }) //同期でファイル読み込み
+          // .readdirSync("./public/fonts", { withFileTypes: true }) //同期でファイル読み込み
+          .readdirSync(`${basePath}/fonts`, { withFileTypes: true }) //同期でファイル読み込み
           .filter((dirent) => dirent.isFile())
           .map(({ name }) => name) //フォルダ除外
           .filter(function (file) {
@@ -150,7 +155,7 @@ const voiceRecognitionServer = () => {
       enableWordTimeOffsets: true,
       speechContexts: [
         {
-          phrases: ["千葉 いちば", "ケモナー", "ペドフィリア", "JMoF", "同人誌", "サルノリ"],
+          phrases: ["千葉いちば", "ケモナー", "ペドフィリア", "JMoF", "同人誌", "サルノリ"],
         },
       ], // add your own speech context for better recognition
     },
