@@ -3,6 +3,7 @@ import { useSockets } from "../context/socket.context";
 import workletURL from "./recorderWorkletProcessor.js?url";
 import StartButton from "../molecules/start-button";
 import StopButton from "../molecules/stop-button";
+import RecToggleButton from "./RecToggleButton";
 
 let volumeLog = [];
 const Recording = () => {
@@ -112,18 +113,16 @@ const Recording = () => {
     // setVolume([...soundVolumeArray, volumeAmount]);
   };
 
-  const handleStart = () => {
-    initRecording();
-  };
-
-  // 録音停止
-  const handleStop = () => {
-    // socket.emit("activeStopStream");
-    socket.emit("endGoogleCloudStream", "");
-    setMessages([tmpText, ...messages]);
-    setTmpText(``);
-    audioDisconnect();
-    setRecordingStatus(false);
+  const handleToggle = () => {
+    if (isRecording) {
+      socket.emit("endGoogleCloudStream", "");
+      setMessages([tmpText, ...messages]);
+      setTmpText(``);
+      audioDisconnect();
+      setRecordingStatus(false);
+    } else {
+      initRecording();
+    }
   };
 
   const pauseApiRequest = () => {
@@ -155,9 +154,7 @@ const Recording = () => {
   return (
     <div>
       <p>{isSilence ? "🙊" : "○"}</p>
-      <p>{soundVolume}</p>
-      <StartButton handleClick={handleStart} isRecording={isRecording} />
-      <StopButton handleClick={handleStop} isRecording={isRecording} />
+      <RecToggleButton isRecording={isRecording} handleClick={handleToggle} soundVolume={soundVolume} />
     </div>
   );
 };

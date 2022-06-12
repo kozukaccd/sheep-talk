@@ -37,7 +37,6 @@ const MessageField = () => {
   }, []);
 
   useEffect(() => {
-    console.log("ここね");
     const textMessage = new mojs.Html({
       el: "#text-message",
       scale: 1,

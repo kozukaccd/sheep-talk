@@ -20,15 +20,8 @@ const GlobalStyle = createGlobalStyle`
 function App() {
   const { socket } = useSockets();
   const [selectedFont, setSelectedFont] = useState("");
-
-  console.log("===================");
-  console.log(Sheep);
-  console.log(SheepController);
-  console;
-  console.log("===================");
   useEffect(() => {
     socket.on("select-font", (data) => {
-      console.log("koko is ugoiteru");
       setSelectedFont(data);
     });
   }, [selectedFont]);
@@ -36,9 +29,6 @@ function App() {
   return (
     <div className="App">
       <GlobalStyle selectedFont={selectedFont} />
-      <header>
-        <p>aiueo</p>
-      </header>
       <main>
         <HashRouter basename="/">
           <Routes>
@@ -51,9 +41,5 @@ function App() {
     </div>
   );
 }
-
-const TestComponent = () => {
-  return <p>testaaaa</p>;
-};
 
 export default App;
