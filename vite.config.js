@@ -23,6 +23,7 @@ import react from "@vitejs/plugin-react";
 import electron from "vite-plugin-electron";
 import renderer from "vite-plugin-electron/renderer";
 import pkg from "./package.json";
+import svgr from "@honkhonk/vite-plugin-svgr";
 
 rmSync(join(__dirname, "dist"), { recursive: true, force: true }); // v14.14.0
 
@@ -40,6 +41,7 @@ export default defineConfig((command, mode) => {
       react({
         include: "**/*.jsx",
       }),
+      svgr(),
       electron({
         main: {
           entry: join(__dirname, "electron/main/index.js"),

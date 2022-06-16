@@ -39,12 +39,16 @@ const url = `http://${process.env["VITE_DEV_SERVER_HOST"]}:${process.env["VITE_D
 async function createWindow() {
   win = new BrowserWindow({
     title: "Main window",
+    useContentSize: true,
+    width: 800,
+    height: 700,
+    resizable: false,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
     },
   });
-
+  win.setMenuBarVisibility(false);
   if (app.isPackaged) {
     win.loadFile(`${basePath}/dist/index.html`);
   } else {

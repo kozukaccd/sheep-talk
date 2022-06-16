@@ -6,6 +6,7 @@ import StopButton from "./stop-button";
 import mojs from "@mojs/core";
 import styled from "styled-components";
 import color from "../resource/color.js";
+import { useAudioDevice } from "../context/audio-device-context";
 
 const DEFAULT_CIRCLE_RADIUS = 100;
 const DEFAULT_BUTTON_COLOR = "226,88,56";
@@ -33,8 +34,15 @@ const RecToggleButton = ({ soundVolume, handleClick }) => {
   const [isRec, setRec] = useState("default");
   const coefRef = useRef([1, 1]);
   const noiseAnimationRef = useRef();
-  const [noiseTransformCss, setNoiseTransformCss] = useState("translate(0px, 0px)");
+  const { inputDevice, setInputDevice, audioDeviceList, setAudioDeviceList } = useAudioDevice();
+
   mojs.addShape("Mic", Mic);
+
+  useEffect(() => {
+    if (!isRec && isRec !== "default") {
+      setRec(!isRec);
+    }
+  }, [inputDevice]);
 
   useEffect(() => {
     const volumeWave = new mojs.Shape({
@@ -135,7 +143,7 @@ const RecToggleButton = ({ soundVolume, handleClick }) => {
       onUpdate: function onUpdate(ep, p, isFwd) {
         const nozieP = noise(p);
         const transform = `translate( ${coefRef.current[0] * (10 * nozieP)} px, ${coefRef.current[1] * (10 * nozieP)}px )`;
-        // console.log(transform);
+        console.log(transform);
         setNoiseTransformCss(transform);
       },
       onComplete: () => {
@@ -159,14 +167,14 @@ const RecToggleButton = ({ soundVolume, handleClick }) => {
 
   useEffect(() => {
     if (!isAnimPlaying.current) {
-      const targetRadius = DEFAULT_CIRCLE_RADIUS + soundVolume;
+      const targetRadius = DEFAULT_CIRCLE_RADIUS + soundVolume * 2;
 
       volumeWaveRef.current
         .tune({
           fill: `rgba(${DEFAULT_BUTTON_COLOR},0)`,
           strokeWidth: { [`${20 + soundVolume / 3}`]: 0 },
           stroke: { [`rgba(${DEFAULT_BUTTON_COLOR},0)`]: `rgba(${DEFAULT_BUTTON_COLOR},1)` },
-          radius: { [DEFAULT_CIRCLE_RADIUS + 10]: [targetRadius + 70] },
+          radius: { [DEFAULT_CIRCLE_RADIUS + 10]: [targetRadius + 30] },
           duration: 2000,
           easing: "sin.out",
           isShowEnd: false,
@@ -220,36 +228,39 @@ const RecToggleButton = ({ soundVolume, handleClick }) => {
   }, [isRec]);
 
   useEffect(() => {
-    console.log("mouse o-ba- status is ", isMouseOver);
-    noiseAnimationRef.current.play();
+    // console.log("mouse o-ba- status is ", isMouseOver);
+    // noiseAnimationRef.current.play();
   }, [isMouseOver]);
 
   const mouseEnterHandler = () => {
-    isMouseOverRef.current = true;
-    setIsMouseOver(true);
-  };
-  const mouseLeaveHandler = () => {
-    isMouseOverRef.current = false;
-    setIsMouseOver(false);
+    // isMouseOverRef.current = true;
+    // setIsMouseOver(true);
   };
 
+  const mouseLeaveHandler = () => {
+    // isMouseOverRef.current = false;
+    // setIsMouseOver(false);
+  };
+
+  // TODO: 音量値はsoundVolumeで管理している。メーターを作るときはこれを使う
+
   return (
-    <div>
-      <VolumeAnimationWrapper
+    <VolumeAnimationWrapper id="volume-animation-wrapper">
+      <VolumeAnimation
         onClick={() => {
           handleClick();
           setRec(!isRec);
         }}
+        id="volume-animation"
       >
         <div id="volume-wave"></div>
-        <ButtonWrapper className="button-wrapper" noiseTransformCss={noiseTransformCss} onMouseEnter={mouseEnterHandler} onMouseLeave={mouseLeaveHandler}>
+        <div className="button-wrapper" onMouseEnter={mouseEnterHandler} onMouseLeave={mouseLeaveHandler}>
           <div id="mic-button" className="mic-button"></div>
           <div id="mic"></div>
-        </ButtonWrapper>
-      </VolumeAnimationWrapper>
-      <p>{200 + soundVolume}</p>
-      <TestComp />
-    </div>
+        </div>
+      </VolumeAnimation>
+      {/* <p>{200 + soundVolume}</p> */}
+    </VolumeAnimationWrapper>
   );
 };
 
@@ -259,24 +270,15 @@ const RecToggleButton = ({ soundVolume, handleClick }) => {
 //   }};
 // `;
 
-const ButtonWrapper = styled.div.attrs((props) => ({
-  style: {
-    transform: props.noiseTransformCss,
-  },
-}))``;
-
-const Component = styled.div.attrs((props) => ({
-  style: {
-    background: props.background,
-  },
-}))`
+const VolumeAnimationWrapper = styled.div`
   width: 100%;
+  height: 100%;
 `;
 
-const VolumeAnimationWrapper = styled.div`
-  position: absolute;
-  top: 50%;
-  left: 50%;
+const VolumeAnimation = styled.div`
+  position: relative;
+  left: 38%;
+  top: 48%;
   width: 200px;
   height: 200px;
   /* background-color: red; */
@@ -284,16 +286,14 @@ const VolumeAnimationWrapper = styled.div`
   .button-wrapper {
     width: 100%;
     height: 100%;
-    /* transition-duration: 0.6s; */
+    transition-duration: 0.6s;
 
     &:hover {
       cursor: pointer;
-      /* transform: scale(1.04);
-      transition-duration: 0.6s; */
+      transform: scale(1.04);
+      transition-duration: 0.6s;
     }
   }
 `;
-
-const TestComp = () => {};
 
 export default RecToggleButton;

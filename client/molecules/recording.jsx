@@ -4,11 +4,10 @@ import workletURL from "./recorderWorkletProcessor.js?url";
 import StartButton from "../molecules/start-button";
 import StopButton from "../molecules/stop-button";
 import RecToggleButton from "./RecToggleButton";
+import { useAudioDevice } from "../context/audio-device-context";
 
 let volumeLog = [];
 const Recording = () => {
-  const [file, setFile] = useState([]);
-  const [audioState, setAudioState] = useState(true);
   const { socket, messages, setMessages, tmpText, setTmpText } = useSockets();
   const audioRef = useRef();
   const [isRecording, setRecordingStatus] = useState(false);
@@ -16,9 +15,9 @@ const Recording = () => {
   const [input, setInput] = useState(null);
   const [processor, setProcessor] = useState(null);
   const [soundVolume, setVolume] = useState(0);
-  const [lastTalkingTime, setLastTalkingTime] = useState(new Date());
   const [isSilence, setIsSilence] = useState(false);
   const [volumeAverage, setVolumeAverage] = useState(0);
+  const { inputDevice, setInputDevice, audioDeviceList, setAudioDeviceList } = useAudioDevice();
 
   const refVolume = useRef(soundVolume);
   const refVolumeAverage = useRef(volumeAverage);
@@ -29,6 +28,12 @@ const Recording = () => {
     refVolumeAverage.current = volumeAverage;
     refIsSilence.current = isSilence;
   }, [soundVolume, volumeAverage, isSilence]);
+
+  useEffect(() => {
+    if (isRecording) {
+      handleToggle();
+    }
+  }, [audioDeviceList, inputDevice]);
 
   useEffect(() => {
     setInterval(() => {
@@ -54,14 +59,12 @@ const Recording = () => {
     setVolumeAverage(volumeAverage);
     if (refVolumeAverage.current > 10 || tailVolumeAverage > 10) {
       if (refIsSilence.current) {
-        console.log("resume it");
         setIsSilence(() => false);
         refIsSilence.current = false;
         resumeApiRequest();
       }
     } else {
       if (!refIsSilence.current) {
-        console.log("pause it");
         setIsSilence(() => true);
         refIsSilence.current = true;
         pauseApiRequest();
@@ -78,7 +81,7 @@ const Recording = () => {
     audioRef.current = new AudioContext({ latencyHint: "interactive" });
     await audioRef.current.audioWorklet.addModule(workletURL);
     audioRef.current.resume();
-    const tmpGlobalStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    const tmpGlobalStream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: inputDevice }, video: false });
     const tmpInput = audioRef.current.createMediaStreamSource(tmpGlobalStream);
     setGlobalStream(tmpGlobalStream);
     const tmpProcessor = new window.AudioWorkletNode(audioRef.current, "recorder.worklet");
@@ -151,11 +154,13 @@ const Recording = () => {
     setTmpText(``);
   });
 
+  // TODO: ミュート判定中かどうかはisSilenceで判断している。ひつじが喋る機能をつけるときにはこれを利用したいな。
+
   return (
-    <div>
-      <p>{isSilence ? "🙊" : "○"}</p>
+    <Fragment>
+      {/* <p>{isSilence ? "🙊" : "○"}</p> */}
       <RecToggleButton isRecording={isRecording} handleClick={handleToggle} soundVolume={soundVolume} />
-    </div>
+    </Fragment>
   );
 };
 

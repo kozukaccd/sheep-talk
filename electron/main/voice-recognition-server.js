@@ -88,11 +88,14 @@ const voiceRecognitionServer = () => {
       }
     });
 
+    client.on("bubbleConfigUpdate", (config) => {
+      client.emit("bubbleConfigUpdate", config);
+      client.broadcast.emit("bubbleConfigUpdate", config);
+    });
+
     client.on("select-font", (selectedFont) => {
-      console.log(selectedFont);
       client.emit("select-font", selectedFont);
       client.broadcast.emit("select-font", selectedFont);
-      // client.emit("select-font");
     });
 
     const startRecognitionStream = (client) => {
