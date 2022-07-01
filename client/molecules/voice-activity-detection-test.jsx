@@ -3,7 +3,7 @@ import { useSockets } from "../context/socket.context";
 import workletURL from "./recorderWorkletProcessor.js?url";
 import RecToggleButton from "./rec-toggle-button";
 import { useAudioDevice } from "../context/audio-device-context";
-
+import vad from "voice-activity-detection";
 let volumeLog = [];
 const Recording = () => {
   const { socket, messages, setMessages, tmpText, setTmpText } = useSockets();
@@ -55,7 +55,7 @@ const Recording = () => {
     const tailVolumeAverage = Math.floor(tailVolumeSum / tailVolumes.length);
 
     setVolumeAverage(volumeAverage);
-    if (refVolumeAverage.current > 5 || tailVolumeAverage > 5) {
+    if (refVolumeAverage.current > 10 || tailVolumeAverage > 10) {
       if (refIsSilence.current) {
         setIsSilence(() => false);
         refIsSilence.current = false;

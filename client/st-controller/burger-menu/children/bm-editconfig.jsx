@@ -13,7 +13,7 @@ import mojs from "@mojs/core";
 const BMEditConfig = () => {
   return (
     <BMItemWrapper>
-      <BMItemIcon svg={<MessageSVG />} dataTip="フキダシの色を変更できます" />
+      <BMItemIcon svg={<MessageSVG />} dataTip="フキダシの形状・色・位置を変更できます" />
       <BMBubbleSelector />
     </BMItemWrapper>
   );

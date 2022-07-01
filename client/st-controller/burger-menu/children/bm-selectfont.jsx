@@ -10,7 +10,7 @@ import { useSockets } from "../../../context/socket.context";
 const BMSelectFont = () => {
   return (
     <BMItemWrapper>
-      <BMItemIcon svg={<FontSVG />} dataTip="フキダシに使用するフォントが変更できます" />
+      <BMItemIcon svg={<FontSVG />} dataTip="フキダシに使用するテキストエリアのフォント・位置を変更できます" />
       <BMSelector />
     </BMItemWrapper>
   );
