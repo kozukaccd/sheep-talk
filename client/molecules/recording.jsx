@@ -1,9 +1,7 @@
 import React, { Fragment, useState, useEffect, useRef } from "react";
 import { useSockets } from "../context/socket.context";
 import workletURL from "./recorderWorkletProcessor.js?url";
-import StartButton from "../molecules/start-button";
-import StopButton from "../molecules/stop-button";
-import RecToggleButton from "./RecToggleButton";
+import RecToggleButton from "./rec-toggle-button";
 import { useAudioDevice } from "../context/audio-device-context";
 
 let volumeLog = [];
@@ -17,7 +15,7 @@ const Recording = () => {
   const [soundVolume, setVolume] = useState(0);
   const [isSilence, setIsSilence] = useState(false);
   const [volumeAverage, setVolumeAverage] = useState(0);
-  const { inputDevice, setInputDevice, audioDeviceList, setAudioDeviceList } = useAudioDevice();
+  const { inputDevice, audioDeviceList } = useAudioDevice();
 
   const refVolume = useRef(soundVolume);
   const refVolumeAverage = useRef(volumeAverage);
@@ -136,7 +134,6 @@ const Recording = () => {
   };
 
   const audioDisconnect = () => {
-    console.log("disconnect audio");
     let track = globalStream.getTracks()[0];
     track.stop();
 

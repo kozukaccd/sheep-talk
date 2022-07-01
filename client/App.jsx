@@ -1,6 +1,5 @@
-import Sheep from "./organisms/sheep";
-import SheepController from "./organisms/sheep-controller";
-import Test from "./organisms/test";
+import SheepPlayer from "./st-player/sheep-player";
+import SheepController from "./st-controller/sheep-controller";
 import { Routes, Route, HashRouter } from "react-router-dom";
 
 import react, { useState, useEffect } from "react";
@@ -20,11 +19,17 @@ const GlobalStyle = createGlobalStyle`
 function App() {
   const { socket } = useSockets();
   const [selectedFont, setSelectedFont] = useState("");
+
+  // デフォルトフォントを定義
   useEffect(() => {
+    socket.emit("getFontList");
+    socket.on("getFontList", (fonts) => {
+      socket.emit("select-font", fonts[0]);
+    });
     socket.on("select-font", (data) => {
       setSelectedFont(data);
     });
-  }, [selectedFont]);
+  }, []);
 
   return (
     <div className="App">
@@ -32,9 +37,8 @@ function App() {
       <main>
         <HashRouter basename="/">
           <Routes>
-            <Route path="/player" element={<Sheep />} />
+            <Route path="/player" element={<SheepPlayer />} />
             <Route path="/" exact element={<SheepController />} />
-            <Route path="/test" element={<Test />} />
           </Routes>
         </HashRouter>
       </main>

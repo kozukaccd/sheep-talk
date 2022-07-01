@@ -1,4 +1,4 @@
-import voiceRecognitionServer from "./voice-recognition-server.js";
+import socketServer from "./socket-server.js";
 import startWebServer from "./page-server.js";
 
 const electron = require("electron");
@@ -10,12 +10,13 @@ const release = require("os").release;
 const join = require("path").join;
 
 const mode = process.env["MODE"];
+console.log("test");
 let basePath = ".";
 if (mode) {
   basePath = mode === "development" ? "." : "./resources/app";
 }
 
-console.log("hello from index.js");
+// console.log("hello from index.js");
 console.log(`current mode is ${mode}`);
 
 // Disable GPU Acceleration for Windows 7
@@ -68,7 +69,7 @@ async function createWindow() {
   });
 }
 
-voiceRecognitionServer();
+socketServer();
 startWebServer();
 
 app.whenReady().then(createWindow);

@@ -8,15 +8,15 @@ const FontSelector = () => {
   const { socket, messages, setMessages, tmpText, setTmpText } = useSockets();
   useEffect(() => {
     socket.emit("getFontList");
-    socket.on("getFontlist", (fonts) => {
+    socket.on("getFontList", (fonts) => {
       setLocalFonts(fonts);
-      console.log("set default font");
+      // console.log("set default font");
       socket.emit("select-font", fonts[0]);
     });
   }, []);
 
   useEffect(() => {
-    console.log(selectedFont);
+    // console.log(selectedFont);
     socket.emit("select-font", selectedFont);
   }, [selectedFont]);
 
