@@ -27,15 +27,21 @@ const BMColorSelector = () => {
   const [strokeColor, setStrokeColor] = useState(color.main);
   const [displayColorPicker, setDisplayColorPicker] = useState(false);
   const { bubbleShapeList, setBubbleShapeList, config, setConfig, currentSelectedShapeId, saveUserConfig } = useBubbleConfig();
+  const colorTmpRef = useRef(null);
   //bubbleConfig { shapeId: 1, strokeColor: color.main, x: 0, y: 0, width: "310px", height: "240px", fontSize: "22px" }
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    if (config && colorTmpRef.current !== config.config.bubble.strokeColor) {
+      setStrokeColor(config.config.bubble.strokeColor);
+    }
+  }, [config]);
 
   useEffect(() => {
     if (config) {
       const tmp = { ...config };
       tmp.config.bubble.strokeColor = strokeColor;
       socket.emit("bubbleConfigUpdate", tmp);
+      colorTmpRef.current = strokeColor;
     }
   }, [strokeColor]);
 
