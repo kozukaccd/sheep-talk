@@ -8,15 +8,15 @@ const socket = io("http://localhost:5098/");
 
 const SocketContext = createContext({
   socket,
-  setUsername: () => false,
   setMessages: () => false,
 });
 
 const SocketsProvier = (props) => {
   const [messages, setMessages] = useState([]);
+  const [translatedTexts, setTranslatedTexts] = useState([]);
   const [tmpText, setTmpText] = useState(``);
 
-  return <SocketContext.Provider value={{ socket, messages, setMessages, tmpText, setTmpText }} {...props} />;
+  return <SocketContext.Provider value={{ socket, messages, setMessages, tmpText, setTmpText, translatedTexts, setTranslatedTexts }} {...props} />;
 };
 
 export const useSockets = () => useContext(SocketContext);

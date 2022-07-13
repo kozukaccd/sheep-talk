@@ -7,14 +7,13 @@ import color from "../../constant/color";
 const BalloonCanvas = () => {
   const { bubbleShapeList, setBubbleShapeList, config, setConfig, currentSelectedShapeId, saveUserConfig } = useBubbleConfig();
   const [test, setTest] = useState(null);
-  const [scaleProp, setScaleProp] = useState(4);
-  const { socket, messages, tmpText } = useSockets();
-  const textContentRef = useRef();
+
+  const { socket, messages, tmpText, translatedTexts } = useSockets();
+
   const [textAreaEditMode, setTextAreaEditMode] = useState(false);
 
   useEffect(() => {
     if (bubbleShapeList) {
-      console.log(bubbleShapeList);
       setTest(
         bubbleShapeList.map((item) => {
           return `<svg width="100" height="100" paint-order="stroke" viewbox="-20 -20 130 130"   stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">${item}</svg>`;
@@ -29,20 +28,34 @@ const BalloonCanvas = () => {
     });
   }, []);
 
+  useEffect(() => {}, [translatedTexts]);
+
+  useEffect(() => {}, [messages]);
+
   return (
     <>
       {test ? <Fragment>{config ? <SVGWrapper config={config} dangerouslySetInnerHTML={{ __html: test[currentSelectedShapeId] }} /> : null}</Fragment> : null}
       <TextMessage id="text-message" config={config} textAreaEditMode={textAreaEditMode}>
-        <div ref={textContentRef}>
-          <UlStyle>
-            {tmpText === null ? null : <MessagedBalloon message={tmpText} textAreaEditMode={textAreaEditMode} />}
-            {messages
-              ? messages.map((message, index) => {
-                  return <MessagedBalloon message={message} />;
-                })
-              : null}
-          </UlStyle>
-        </div>
+        <UlStyle>
+          {tmpText === null ? null : <MessagedBalloon message={tmpText} textAreaEditMode={textAreaEditMode} id={"tmp"} />}
+          {messages
+            ? messages.map((message, index) => {
+                return (
+                  <MessagedBalloon
+                    key={message.id || null}
+                    message={message.text || null}
+                    translatedText={(() => {
+                      const tmp = translatedTexts.find((item) => {
+                        return item ? item.id === message.id : false;
+                      });
+                      return tmp ? tmp.text : null;
+                    })()}
+                    id={message.id}
+                  />
+                );
+              })
+            : null}
+        </UlStyle>
       </TextMessage>
     </>
   );
@@ -65,10 +78,7 @@ const SVGWrapper = styled.div`
   }
 `;
 
-const UlStyle = styled.ul`
-  list-style-type: none;
-  padding-left: 14px;
-`;
+const UlStyle = styled.div``;
 
 const TextMessage = styled.div`
   ${(props) => {

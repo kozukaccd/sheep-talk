@@ -20,7 +20,7 @@ const BMTextareaParamEditor = () => {
             <SliderItem text={"y位置"} min={0} max={1080} step={0.1} propName={"y"} type={"textArea"} />
             <SliderItem text={"横幅"} min={0} max={1920} step={1} propName={"width"} type={"textArea"} />
             <SliderItem text={"高さ"} min={0} max={1080} step={1} propName={"height"} type={"textArea"} />
-            <SliderItem text={"回転"} min={0} max={360} step={1} propName={"rotate"} type={"textArea"} />
+            <SliderItem text={"回転"} min={-45} max={45} step={1} propName={"rotate"} type={"textArea"} />
             <SliderItem text={"文字サイズ"} min={0} max={50} step={0.1} propName={"fontSize"} type={"textArea"} />
           </SliderItemWrapper>
         </Fragment>

@@ -6,7 +6,7 @@ import { useAudioDevice } from "../context/audio-device-context";
 
 let volumeLog = [];
 const Recording = () => {
-  const { socket, messages, setMessages, tmpText, setTmpText } = useSockets();
+  const { socket, messages, setMessages, tmpText, setTmpText, translatedText, setTranslatedText } = useSockets();
   const audioRef = useRef();
   const [isRecording, setRecordingStatus] = useState(false);
   const [globalStream, setGlobalStream] = useState(null);
@@ -37,27 +37,28 @@ const Recording = () => {
     setInterval(() => {
       // 定期実行する関数
       logVolume(refVolume.current);
-    }, 33);
+    }, 32);
   }, []);
 
   const logVolume = (currentVolume) => {
-    if (volumeLog.length < 60) volumeLog.push(soundVolume);
+    if (volumeLog.length < 30) volumeLog.push(soundVolume);
     else {
       volumeLog.shift();
       volumeLog.push(currentVolume);
     }
-    const tailVolumes = volumeLog.slice(-5);
+    const tailVolumes = volumeLog.slice(-3);
 
     const sum = volumeLog.reduce((a, b) => a + b, 0);
     const tailVolumeSum = tailVolumes.reduce((a, b) => a + b, 0);
 
-    const volumeAverage = Math.floor(sum / volumeLog.length);
+    const volumeAveragetmp = Math.floor(sum / volumeLog.length);
     const tailVolumeAverage = Math.floor(tailVolumeSum / tailVolumes.length);
 
-    setVolumeAverage(volumeAverage);
-    if (refVolumeAverage.current > 5 || tailVolumeAverage > 5) {
+    setVolumeAverage(volumeAveragetmp);
+    if (refVolumeAverage.current > 10 || tailVolumeAverage > 10) {
       if (refIsSilence.current) {
         setIsSilence(() => false);
+        1;
         refIsSilence.current = false;
         resumeApiRequest();
       }
@@ -117,8 +118,6 @@ const Recording = () => {
   const handleToggle = () => {
     if (isRecording) {
       socket.emit("endGoogleCloudStream", "");
-      setMessages([tmpText, ...messages]);
-      setTmpText(``);
       audioDisconnect();
       setRecordingStatus(false);
     } else {
@@ -146,16 +145,12 @@ const Recording = () => {
     });
   };
 
-  socket.on("refreshSpeech", () => {
-    setMessages([tmpText, ...messages]);
-    setTmpText(``);
-  });
-
   // TODO: ミュート判定中かどうかはisSilenceで判断している。ひつじが喋る機能をつけるときにはこれを利用したいな。
 
   return (
     <Fragment>
-      {/* <p>{isSilence ? "🙊" : "○"}</p> */}
+      {/* <p>{isSilence ? "🙊" : "○"}</p>
+      <p>{soundVolume}</p> */}
       <RecToggleButton isRecording={isRecording} handleClick={handleToggle} soundVolume={soundVolume} />
     </Fragment>
   );

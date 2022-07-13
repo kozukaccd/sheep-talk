@@ -5,7 +5,7 @@ import MessagedBalloon from "../molecules/messaged-balloon";
 const FontSelector = () => {
   const [localFonts, setLocalFonts] = useState([]);
   const [selectedFont, setSelectedFont] = useState("");
-  const { socket, messages, setMessages, tmpText, setTmpText } = useSockets();
+  const { socket } = useSockets();
   useEffect(() => {
     socket.emit("getFontList");
     socket.on("getFontList", (fonts) => {

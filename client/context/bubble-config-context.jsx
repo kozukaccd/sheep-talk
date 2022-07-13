@@ -30,7 +30,7 @@ const BubbleConfigProvider = (props) => {
       // console.log("useConfig loaded");
       // console.log(userConfig);
       setConfigRaw(userConfig);
-      console.log("aaaa", userConfig);
+      // console.log("aaaa", userConfig);
       setCurrentSelectedShapeId(userConfig.selectedShapeId);
     });
 
@@ -42,8 +42,6 @@ const BubbleConfigProvider = (props) => {
 
     socket.on("bubbleConfigUpdate", (newConfig) => {
       if (configRawRef.current) {
-        // console.log("とどいてるよ");
-        // console.log("currentColor: ", configRawRef.current.shapeData[0].config.bubble.strokeColor);
         const tmp = { ...configRawRef.current };
         tmp.shapeData[newConfig.id] = newConfig;
         // console.log("targetColor: ", tmp.shapeData[0].config.bubble.strokeColor);
@@ -55,7 +53,6 @@ const BubbleConfigProvider = (props) => {
   useEffect(() => {
     // console.log("confgRawを変更");
     if (configRaw) {
-      // console.log("来週のconfigは");
       // console.log(configRaw.shapeData[currentSelectedShapeId]);
       setConfig(configRaw.shapeData[currentSelectedShapeId]);
       configRawRef.current = configRaw;

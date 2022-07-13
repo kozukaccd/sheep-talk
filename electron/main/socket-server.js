@@ -1,6 +1,5 @@
 const dotenv = require("dotenv");
 dotenv.config();
-// console.log(process.env);
 
 const PORT = 5098;
 const app = require("express")();
@@ -8,6 +7,8 @@ const http = require("http").createServer(app);
 
 const path = require("path");
 const fs = require("fs");
+const LANG = "EN";
+const translate = require("deepl");
 
 import getSvgFiles from "./get-svg-files.js";
 import getUserConfig, { saveUserConfig } from "./use-user-config.js";
@@ -15,11 +16,13 @@ import getUserConfig, { saveUserConfig } from "./use-user-config.js";
 const mode = process.env["MODE"];
 const basePath = mode === "development" ? "./public" : "./resources/app/dist";
 
+const log = [{ id: 1, jp: "以下ログファイル", translated: "translated" }];
+
 const socketServer = () => {
   // Google Cloud
   const speech = require("@google-cloud/speech");
   const speechClient = new speech.SpeechClient();
-
+  let timeStamp = 0;
   let isAnimationPlaying = false;
 
   const io = require("socket.io")(http, {
@@ -46,7 +49,8 @@ const socketServer = () => {
     });
 
     client.on("startGoogleCloudStream", () => {
-      startRecognitionStream();
+      const id = new Date().getTime().toString();
+      startRecognitionStream(id);
     });
 
     client.on("endGoogleCloudStream", () => {
@@ -64,14 +68,15 @@ const socketServer = () => {
 
     client.on("pauseStream", () => {
       if (recognizeStream !== null) {
-        console.log("pausing stream");
+        // console.log("pausing stream");
         stopRecognitionStream();
       }
     });
-    client.on("resumeStream", (data) => {
+    client.on("resumeStream", () => {
       if (recognizeStream === null) {
-        console.log("restarting stream");
-        startRecognitionStream(data);
+        // console.log("restarting stream");
+        const id = new Date().getTime().toString();
+        startRecognitionStream(id);
       }
     });
 
@@ -104,8 +109,8 @@ const socketServer = () => {
     client.on("getUserConfig", () => {
       try {
         const config = getUserConfig();
-        console.log(config);
-        console.log("is loaded");
+        // console.log(config);
+        // console.log("is loaded");
         client.emit("getUserConfig", config);
       } catch (e) {
         console.log(e);
@@ -114,8 +119,8 @@ const socketServer = () => {
 
     client.on("saveUserConfig", (data) => {
       try {
-        console.log("saveするだよ");
-        console.log(data);
+        // console.log("saveするだよ");
+        // console.log(data);
         saveUserConfig(data);
       } catch (e) {
         console.log(e);
@@ -159,16 +164,36 @@ const socketServer = () => {
       client.broadcast.emit("select-font", selectedFont);
     });
 
-    const startRecognitionStream = () => {
+    const translateWithDeepl = (text, id) => {
+      console.log(`start translate...${id}`);
+      translate({
+        free_api: true, // ← フリープランのみ記載
+        text: text,
+        target_lang: LANG,
+        auth_key: dotenv.config().parsed.DEEPL_AUTH_KEY, // ここにDeeplのAPIキーを入力
+      })
+        .then((result) => {
+          const enText = result.data.translations[0].text;
+          client.emit("translate-text", { text: enText, timeStamp: id });
+          client.broadcast.emit("translate-text", { text: enText, timeStamp: id });
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    };
+
+    const startRecognitionStream = (id) => {
+      console.log(`start talking...${id}`);
       recognizeStream = speechClient
         .streamingRecognize(request)
         .on("error", console.error)
         .on("data", (data) => {
-          process.stdout.write(
-            data.results[0] && data.results[0].alternatives[0]
-              ? `[${data.results[0] && data.results[0].isFinal}]: ${data.results[0].alternatives[0].transcript}\n`
-              : "\n\nReached transcription time limit, press Ctrl+C\n"
-          );
+          // process.stdout.write(
+          //   data.results[0] && data.results[0].alternatives[0]
+          //     ? `[${data.results[0] && data.results[0].isFinal}]: ${data.results[0].alternatives[0].transcript}\n`
+          //     : "\n\nReached transcription time limit, press Ctrl+C\n"
+          // );
+          data.timeStamp = id;
           client.emit("speechData", data);
           client.broadcast.emit("speechData", data);
           // if end of utterance, let's restart stream
@@ -176,8 +201,9 @@ const socketServer = () => {
           // console.log(activeStopStatus);
 
           if (data.results[0] && data.results[0].isFinal) {
+            console.log(data.results[0].alternatives[0].transcript, ":-----", id);
+            translateWithDeepl(data.results[0].alternatives[0].transcript, id);
             if (isAnimationPlaying) {
-              // console.log("pause playing");
               client.emit("toggleAnimation", "pause");
               client.broadcast.emit("toggleAnimation", "pause");
               isAnimationPlaying = false;
